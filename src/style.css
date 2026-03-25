@@ -1,0 +1,66 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f6eedf;
+}
+
+/* 🌸 Navbar container */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* ✅ Make navbar stay on top */
+  position: fixed; /* or use sticky */
+  top: 0;
+  left: 0;
+  width: 100%;
+  box-sizing: border-box; /* ✅ include padding in width */
+  z-index: 1000; /* make sure it’s above other content */
+
+  background-color: #312618;
+  padding: 10px 20px;
+}
+
+/* 🌟 Logo */
+.logo a {
+  font-size: 22px;
+  font-weight: bold;
+  color: #f9ebce;
+  text-decoration: none;
+}
+
+.logo img {
+  height: 80px;
+  width: auto;
+}
+
+/* 🎶 Links container */
+.nav-links {
+  display: flex;
+  gap: 20px;
+}
+
+/* ✨ Links */
+.nav-links a {
+  color: #f9ebce;
+  text-decoration: none;
+  font-size: 30px;
+  font-weight: bold;
+  padding: 8px 12px;
+  /* ✅ Add smooth transitions */
+  transition: background-color 0.3s ease, color 0.3s ease, border-radius 0.3s ease;
+}
+
+/* 🌈 Hover */
+.nav-links a:hover {
+  background-color: #ddd;
+  color: black;
+  border-radius: 5px;
+}
+
+/* 🌟 Active route */
+.nav-links a.router-link-exact-active {
+  color: #e3c98f;
+  background-color: #543f22;
+  border-radius: 5px;
+}
