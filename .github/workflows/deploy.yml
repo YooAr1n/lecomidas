@@ -2,7 +2,11 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [main] # Runs every time you push to main
+    branches: [main]
+
+# Added this block to help with permissions
+permissions:
+  contents: write
 
 jobs:
   build-and-deploy:
@@ -19,5 +23,5 @@ jobs:
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: dist # Vite builds into the 'dist' folder
-          branch: gh-pages # Your live site will live on this branch
+          folder: dist
+          branch: gh-pages
