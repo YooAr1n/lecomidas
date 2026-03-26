@@ -1,5 +1,10 @@
 <template>
     <div class="order-card">
+        <div class="order-header">
+            <span class="order-id">Order #{{ orderData.id }}</span>
+            <span class="order-date">{{ orderData.date }}</span>
+        </div>
+        
         <div class="order-body">
             <p class="items-list"><strong>Items:</strong> {{ orderData.items.join(', ') }}</p>
             <p class="order-total">Total: ₱{{ format(orderData.total, 2) }}</p>
@@ -14,6 +19,9 @@
             <div class="status-container">
                 <span :class="['status-badge', currentStatus.toLowerCase()]">
                     {{ currentStatus }}
+                </span>
+                <span v-if="currentStatus === 'Delivered'" class="delivered-at">
+                    Delivered at {{ deliveredTimeText }}
                 </span>
             </div>
         </div>
@@ -32,24 +40,25 @@ export default {
         const now = ref(Date.now());
         let timer = null;
 
-        // Calculate if time is up
         const currentStatus = computed(() => {
             const finishTime = props.orderData.timestamp + (props.orderData.estimatedTime * 60000);
             return now.value >= finishTime ? 'Delivered' : 'Preparing';
         });
 
-        // Calculate minutes/seconds remaining
+        // New Computed: Formats the exact time the order finished
+        const deliveredTimeText = computed(() => {
+            if (!props.orderData.timestamp) return "";
+            const finishTime = new Date(props.orderData.timestamp + (props.orderData.estimatedTime * 60000));
+            return finishTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        });
+
         const remainingTimeText = computed(() => {
-            // Check if data exists to avoid NaN
             if (!props.orderData.timestamp || !props.orderData.estimatedTime) {
                 return "Calculating...";
             }
-
             const finishTime = props.orderData.timestamp + (props.orderData.estimatedTime * 60000);
             const diff = finishTime - now.value;
-            
             if (diff <= 0) return "0s";
-
             const mins = Math.floor(diff / 60000);
             const secs = Math.floor((diff % 60000) / 1000);
             return `${mins}m ${secs}s`;
@@ -58,8 +67,6 @@ export default {
         onMounted(() => {
             timer = setInterval(() => {
                 now.value = Date.now();
-                
-                // Optional: Update localStorage once if it hits Delivered
                 if (currentStatus.value === 'Delivered' && props.orderData.status !== 'Delivered') {
                     updateOrderInStorage();
                 }
@@ -77,7 +84,7 @@ export default {
             }
         };
 
-        return { format, currentStatus, remainingTimeText };
+        return { format, currentStatus, remainingTimeText, deliveredTimeText };
     }
 }
 </script>
@@ -113,7 +120,17 @@ export default {
     margin-top: 10px;
     display: flex;
     justify-content: flex-start;
+    align-items: center; /* Align badge and text vertically */
+    gap: 12px;           /* Space between badge and timestamp */
 }
+
+.delivered-at {
+    font-size: 0.8em;
+    color: #666;
+    margin-top: 12px; /* Matches the badge's top margin */
+    font-style: italic;
+}
+
 .status-badge {
     display: inline-block; /* Ensure it respects margins */
     margin-top: 12px;      /* This pushes it away from the 'Ready in' box */

@@ -1,7 +1,7 @@
 <template>
     <div class="package-item">
         <div class="image-wrapper">
-            <img 
+             <img 
                 v-for="(img, index) in imageSources" 
                 :key="index" 
                 :src="img" 
@@ -18,32 +18,69 @@
                     {{ feature }}
                 </li>
             </ul>
+            
+            <button class="order-pkg-btn" @click="showModal = true">
+                Order This Package
+            </button>
         </div>
+
+        <BaseModal v-if="showModal" @close="showModal = false">
+            <div style="text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 10px;">📦</div>
+                <h2>Confirm Package Order</h2>
+                <hr>
+                <div class="modal-summary">
+                    <p>You are about to order:</p>
+                    <p><strong>{{ title }}</strong></p>
+                    <p class="modal-price">Total: ₱{{ format(price, 2) }}</p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-cancel" @click="showModal = false">Cancel</button>
+                    <button class="btn-confirm" @click="finalSubmit">Place Order</button>
+                </div>
+            </div>
+        </BaseModal>
+        <BaseModal v-if="showSuccessModal" @close="goToPrepare">
+            <div style="text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 10px;">☕</div>
+                <h2>Order Sent to Lecomidas!</h2>
+                <p>Your package is being prepared.</p>
+                <div class="modal-actions center">
+                    <button class="btn-confirm" @click="goToPrepare">OK</button>
+                </div>
+            </div>
+        </BaseModal>
     </div>
 </template>
 
 <script>
 import { ref, onMounted, onBeforeUnmount } from "vue";
+import { useRouter } from 'vue-router';
+import BaseModal from '../components/BaseModal.vue'; // Adjust path if needed
 
 export default {
     name: "Package",
+    components: { BaseModal },
     props: {
-        // Change imageSrc to imageSources (an Array)
         imageSources: Array, 
         title: String,
-        price: String,
+        price: [String, Number],
         features: Array
     },
     setup(props) {
+        const router = useRouter();
         const currentIndex = ref(0);
+        const showModal = ref(false); // Controls the modal visibility
+        const showSuccessModal = ref(false);
         let interval;
 
+        const format = window.format;
+
         onMounted(() => {
-            // Only start the slider if there's more than one image
             if (props.imageSources && props.imageSources.length > 1) {
                 interval = setInterval(() => {
                     currentIndex.value = (currentIndex.value + 1) % props.imageSources.length;
-                }, 3000); // Slide every 3 seconds
+                }, 3000);
             }
         });
 
@@ -51,9 +88,35 @@ export default {
             if (interval) clearInterval(interval);
         });
 
-        const format = window.format;
+        // This function handles the actual saving logic
+        const finalSubmit = () => {
+            const newOrder = {
+                id: Math.floor(Math.random() * 10000),
+                timestamp: Date.now(),
+                date: new Date().toLocaleString('en-US', {
+                    month: 'long', day: 'numeric', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit', hour12: true
+                }),
+                total: parseFloat(props.price),
+                items: [`Package: ${props.title}`],
+                status: 'Preparing',
+                estimatedTime: 15 
+            };
 
-        return { currentIndex, format };
+            const existingOrders = JSON.parse(localStorage.getItem('lecomidas_orders')) || [];
+            existingOrders.unshift(newOrder);
+            localStorage.setItem('lecomidas_orders', JSON.stringify(existingOrders));
+
+            showModal.value = false;
+            showSuccessModal.value = true;
+        };
+
+        const goToPrepare = () => {
+            showSuccessModal.value = false;
+            router.push('/order');
+        };
+
+        return { currentIndex, format, showModal, showSuccessModal, finalSubmit, goToPrepare };
     }
 }
 </script>
@@ -92,7 +155,34 @@ export default {
     opacity: 1;
 }
 
+.order-pkg-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    background-color: #312618; /* Lecomidas Dark Brown */
+    color: #f9ebce;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.order-pkg-btn:hover {
+    background-color: #5b4426;
+    transform: scale(1.02);
+}
+
+.order-pkg-btn:active {
+    transform: scale(0.98);
+}
+
+/* Ensure info-details allows the button to sit at the bottom */
 .info-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     background: white;
     border-radius: 15px;
     padding: 20px;
@@ -130,5 +220,47 @@ export default {
     .package-item {
         max-width: 100%;
     }
+}
+
+.modal-summary {
+    margin: 20px 0;
+    color: #53433f;
+}
+
+.modal-price {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #2d6a4f;
+    margin-top: 10px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.btn-cancel {
+    background: #eee;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-confirm {
+    background: #312618;
+    color: #f9ebce;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-confirm:hover {
+    background-color: #5b4426;
 }
 </style>

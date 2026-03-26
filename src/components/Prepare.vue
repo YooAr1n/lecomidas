@@ -48,7 +48,6 @@ export default {
 }
 
 .card-header h1 {
-  font-family: 'Times New Roman', serif; /* Or similar elegant serif */
   font-size: 2.2rem;
   color: #53433f;
   text-align: center;

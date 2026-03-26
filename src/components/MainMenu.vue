@@ -187,7 +187,7 @@ export default {
         // Inside your setup() in MainMenu.vue
         const finalSubmit = () => {
             // 1. Create the new order object
-            const prepTimeMinutes = 0.0166//Math.floor(Math.random() * 11) + 5; // Generates 5-15 mins
+            const prepTimeMinutes = Math.floor(Math.random() * 11) + 5; // Generates 5-15 mins
 
             const newOrder = {
                 id: Math.floor(Math.random() * 10000),
@@ -359,6 +359,7 @@ li {
     text-align: right;
     font-size: 1.2rem;
     margin-bottom: 20px;
+    color: #2d6a4f;
     border-top: 2px solid #f1ece5;
     padding-top: 10px;
 }
