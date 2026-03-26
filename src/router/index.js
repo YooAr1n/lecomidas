@@ -7,6 +7,7 @@ import Menu from '../views/Menu.vue'
 import Visit from '../views/Visit.vue'
 import Book from '../views/Book.vue'
 import Order from '../views/Order.vue'
+import MyOrders from '../views/MyOrders.vue'
 
 const routes = [
   {
@@ -18,6 +19,11 @@ const routes = [
     path: '/menu',
     name: 'Menu',
     component: Menu
+  },
+  {
+    path: '/orders',
+    name: 'MyOrders',
+    component: MyOrders
   },
   {
     path: '/about',

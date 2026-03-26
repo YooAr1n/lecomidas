@@ -34,46 +34,54 @@
             </button>
         </div>
 
-        <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
-            <div class="modal-card">
-                <h2>Confirm Your Order</h2>
-                <hr>
-                <ul class="order-summary">
-                    <li v-for="item in selectedItems" :key="item.name">
-                        <span>{{ item.name }} x {{ formatWhole(item.quantity, 2) }}</span>
-                        <span>₱{{ format(item.price * item.quantity, 2) }}</span>
-                    </li>
-                </ul>
-                <div class="modal-total">
-                    <strong>Total Amount: ₱{{ format(total, 2) }}</strong>
-                </div>
-                <div class="modal-actions">
-                    <button class="btn-cancel" @click="showModal = false">Cancel</button>
-                    <router-link to="/order">
-                        <button class="btn-confirm" @click="finalSubmit">Place Order</button>
-                    </router-link>
-                </div>
+        <BaseModal v-if="showModal" @close="showModal = false">
+            <h2>Confirm Your Order</h2>
+            <hr>
+            <ul class="order-summary">
+                <li v-for="item in selectedItems" :key="item.name">
+                    <span>{{ item.name }} x {{ formatWhole(item.quantity, 2) }}</span>
+                    <span>₱{{ format(item.price * item.quantity, 2) }}</span>
+                </li>
+            </ul>
+            <div class="modal-total">
+                <strong>Total Amount: ₱{{ format(total, 2) }}</strong>
             </div>
-        </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" @click="showModal = false">Cancel</button>
+                <button class="btn-confirm" @click="finalSubmit">Place Order</button>
+            </div>
+        </BaseModal>
 
-        <div v-if="showEmptyModal" class="modal-overlay" @click.self="showEmptyModal = false">
-            <div class="modal-card warning-card">
-                <div class="warning-icon">⚠️</div>
-                <h2>Oops!</h2>
-                <p>Please select at least one item and set its quantity before placing an order.</p>
+        <BaseModal v-if="showEmptyModal" extraClass="warning-card" @close="showEmptyModal = false">
+            <div class="warning-icon">⚠️</div>
+            <h2>Oops!</h2>
+            <p>Please select at least one item and set its quantity before placing an order.</p>
+            <div class="modal-actions center">
+                <button class="btn-confirm" @click="showEmptyModal = false">Got it!</button>
+            </div>
+        </BaseModal>
+
+        <BaseModal v-if="showSuccessModal" @close="goToPrepare">
+            <div style="text-align: center;">
+                <div style="font-size: 3rem; margin-bottom: 10px;">☕</div>
+                <h2>Order Sent to Lecomidas!</h2>
+                <p>Your treats are being prepared.</p>
                 <div class="modal-actions center">
-                    <button class="btn-confirm" @click="showEmptyModal = false">Got it!</button>
+                    <button class="btn-confirm" @click="goToPrepare">OK</button>
                 </div>
             </div>
-        </div>
+        </BaseModal>
     </div>
 </template>
 
 <script>
+import BaseModal from '../components/BaseModal.vue'; // Import it
+import { useRouter } from 'vue-router';
 import { reactive, ref, computed } from "vue"; // Add computed
 
 export default {
     name: "MainMenu",
+    components: { BaseModal },
     setup() {
         const menuSections = reactive([
             {
@@ -150,6 +158,7 @@ export default {
 
         const showModal = ref(false);
         const showEmptyModal = ref(false);
+        const showSuccessModal = ref(false); // Add this new ref
 
         // This calculates which items are selected for the modal list
         const selectedItems = computed(() => {
@@ -173,15 +182,50 @@ export default {
             }
         };
 
+        const router = useRouter();
+
+        // Inside your setup() in MainMenu.vue
         const finalSubmit = () => {
-            alert("Order sent to Lecomidas! See you soon.");
+            // 1. Create the new order object
+            const prepTimeMinutes = 0.0166//Math.floor(Math.random() * 11) + 5; // Generates 5-15 mins
+
+            const newOrder = {
+                id: Math.floor(Math.random() * 10000),
+                date: new Date().toLocaleString('en-US', {
+                    month: 'long', day: 'numeric', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit', hour12: true
+                }),
+                timestamp: Date.now(),
+                total: total.value,
+                items: selectedItems.value.map(item => `${item.name} (x${formatWhole(item.quantity, 2)})`),
+                status: 'Preparing',
+                // --- ADD THIS LINE ---
+                estimatedTime: prepTimeMinutes 
+            };
+
+            // 2. Get existing orders from localStorage or start a new list
+            const existingOrders = JSON.parse(localStorage.getItem('lecomidas_orders')) || [];
+
+            // 3. Add the new order to the start of the list
+            existingOrders.unshift(newOrder);
+
+            // 4. Save back to localStorage
+            localStorage.setItem('lecomidas_orders', JSON.stringify(existingOrders));
+
+            // 5. Close modal and show success
             showModal.value = false;
-            // Optional: reset the menu here if you want
+            showSuccessModal.value = true;
+        };
+
+        const goToPrepare = () => {
+            showSuccessModal.value = false;
+            router.push('/order');
         };
 
         return {
             menuSections, format, formatWhole, total, updateTotal,
-            confirmOrder, showModal, showEmptyModal, selectedItems, finalSubmit
+            confirmOrder, showModal, showEmptyModal, showSuccessModal, 
+            selectedItems, finalSubmit, goToPrepare
         };
     },
 };
@@ -395,18 +439,19 @@ li {
     height: 22px;
     width: 22px;
     background-color: #fff;
-    border: 2px solid #312618; /* Lecomidas Dark Brown */
+    border: 2px solid #312618;
+    /* Lecomidas Dark Brown */
     border-radius: 4px;
     transition: all 0.2s ease;
 }
 
 /* On hover */
-.custom-checkbox:hover input ~ .checkmark {
+.custom-checkbox:hover input~.checkmark {
     background-color: #f9ebce;
 }
 
 /* When checked */
-.custom-checkbox input:checked ~ .checkmark {
+.custom-checkbox input:checked~.checkmark {
     background-color: #312618;
 }
 
@@ -417,7 +462,7 @@ li {
     display: none;
 }
 
-.custom-checkbox input:checked ~ .checkmark:after {
+.custom-checkbox input:checked~.checkmark:after {
     display: block;
 }
 

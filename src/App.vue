@@ -12,6 +12,7 @@
     <div class="nav-links">
       <router-link to="/">Home</router-link>
       <router-link to="/menu">Menu</router-link>
+      <router-link to="/orders">My Orders</router-link>
       <router-link to="/about">About Us</router-link>
       <router-link to="/visit">Visit Us</router-link>
       <router-link to="/book">Book Us</router-link>
