@@ -1,75 +1,179 @@
+/* --- Global Styles --- */
 body {
   margin: 0;
-  padding: 0;
+  padding-top: 80px; /* Matches navbar height */
   background-color: #f6eedf;
   font-family: 'Georgia', 'Times New Roman', serif;
 }
 
-button {
-  font-family: 'Georgia', 'Times New Roman', serif;
-}
-
-input {
-  font-family: 'Georgia', 'Times New Roman', serif;
-}
-
-/* 🌸 Navbar container */
+/* --- Navbar Container --- */
 .navbar {
   display: flex;
+  flex-direction: row; /* Changed from column to row for desktop */
   justify-content: space-between;
   align-items: center;
-  /* ✅ Make navbar stay on top */
-  position: fixed; /* or use sticky */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  box-sizing: border-box; /* ✅ include padding in width */
-  z-index: 1000; /* make sure it’s above other content */
-
+  height: 80px; /* Fixed height for consistency */
+  box-sizing: border-box;
+  z-index: 1000;
   background-color: #312618;
-  padding: 10px 20px;
+  padding: 0 40px;
+  transition: all 0.3s ease;
 }
 
-/* 🌟 Logo */
-.logo a {
-  font-size: 22px;
-  font-weight: bold;
-  color: #f9ebce;
-  text-decoration: none;
+/* --- Top Section (Logo & Hamburger) --- */
+.nav-top {
+  display: flex;
+  align-items: center;
 }
 
 .logo img {
-  height: 80px;
+  height: 55px;
   width: auto;
+  display: block;
 }
 
-/* 🎶 Links container */
+/* --- Hamburger Icon --- */
+.menu-toggle {
+  display: none; /* Hidden on desktop */
+  flex-direction: column;
+  gap: 5px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.menu-toggle span {
+  width: 25px;
+  height: 3px;
+  background: #f9ebce;
+  border-radius: 2px;
+}
+
+/* --- Navigation Content (Links & Balance) --- */
+.nav-content {
+  display: flex;
+  align-items: center;
+  gap: 40px; /* Space between links and balance pill */
+}
+
 .nav-links {
   display: flex;
-  gap: 20px;
+  gap: 5px;
 }
 
-/* ✨ Links */
 .nav-links a {
   color: #f9ebce;
   text-decoration: none;
-  font-size: 24px;
+  font-size: 16px;
   font-weight: bold;
-  padding: 8px 12px;
-  /* ✅ Add smooth transitions */
-  transition: background-color 0.3s ease, color 0.3s ease, border-radius 0.3s ease;
+  padding: 10px 15px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
 }
 
-/* 🌈 Hover */
 .nav-links a:hover {
-  background-color: #ddd;
-  color: black;
-  border-radius: 5px;
+  background-color: rgba(249, 235, 206, 0.1);
+  color: #e3c98f;
 }
 
-/* 🌟 Active route */
 .nav-links a.router-link-exact-active {
-  color: #e3c98f;
-  background-color: #543f22;
-  border-radius: 5px;
+  color: #312618;
+  background-color: #e3c98f; /* The "Menu" box in your image */
+}
+
+/* --- Balance Section --- */
+.balance-container {
+  background: #f9ebce;
+  padding: 6px 15px;
+  border-radius: 50px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #d4a373;
+  white-space: nowrap;
+}
+
+.balance-label {
+  font-size: 0.7rem;
+  color: #53433f;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.balance-amount {
+  font-weight: bold;
+  color: #2d6a4f;
+  font-size: 1rem;
+}
+
+.topup-group {
+  display: flex;
+  gap: 5px;
+  margin-left: 5px;
+}
+
+.btn-topup {
+  background-color: #2d6a4f;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-topup:hover {
+  background-color: #1b4332;
+}
+
+/* --- 📱 Mobile Responsive Breakpoint --- */
+@media (max-width: 1024px) {
+  .navbar {
+    flex-direction: column; /* Stack for mobile */
+    height: auto;
+    padding: 15px 20px;
+    align-items: stretch;
+  }
+
+  .nav-top {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .menu-toggle {
+    display: flex;
+  }
+
+  .nav-content {
+    display: none; /* Hide by default on mobile */
+    flex-direction: column;
+    padding: 20px 0;
+    gap: 20px;
+  }
+
+  .nav-content.show {
+    display: flex;
+  }
+
+  .nav-links {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .nav-links a {
+    text-align: center;
+    padding: 15px;
+    font-size: 18px;
+  }
+
+  .balance-container {
+    width: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+  }
 }

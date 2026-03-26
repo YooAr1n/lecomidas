@@ -48,7 +48,7 @@
             </div>
             <div class="modal-actions">
                 <button class="btn-cancel" @click="showModal = false">Cancel</button>
-                <button class="btn-confirm" @click="finalSubmit">Place Order</button>
+                <button class="btn-confirm" @click="handleOrderAttempt">Place Order</button>
             </div>
         </BaseModal>
 
@@ -69,6 +69,20 @@
                 <div class="modal-actions center">
                     <button class="btn-confirm" @click="goToPrepare">OK</button>
                 </div>
+            </div>
+        </BaseModal>
+        <BaseModal v-if="showLowBalanceModal" @close="showLowBalanceModal = false">
+            <div style="text-align: center; padding: 20px;">
+                <div style="font-size: 4rem; margin-bottom: 10px;">💸</div>
+                <h2 style="color: #bc4749;">Insufficient Balance</h2>
+                <p>You don't have enough funds to complete this order.</p>
+                <hr style="border: 0.5px solid #eee; margin: 15px 0;">
+                <p>Your Balance: <strong style="color: #2d6a4f;">₱{{ format(currentBalance, 2) }}</strong></p>
+                <p>Required: <strong style="color: #bc4749;">₱{{ format(total, 2) }}</strong></p>
+                
+                <button class="btn-confirm" style="margin-top: 20px; width: 100%;" @click="showLowBalanceModal = false">
+                    Got it
+                </button>
             </div>
         </BaseModal>
     </div>
@@ -159,6 +173,22 @@ export default {
         const showModal = ref(false);
         const showEmptyModal = ref(false);
         const showSuccessModal = ref(false); // Add this new ref
+        const showLowBalanceModal = ref(false); // 1. Add this ref
+
+        // 2. Add the reactive balance computed property
+        const currentBalance = computed(() => {
+            return parseFloat(localStorage.getItem('lecomidas_balance')) || 5000.00;
+        });
+
+        // 3. Create the interceptor function
+        const handleOrderAttempt = () => {
+            if (currentBalance.value < total.value) {
+                showModal.value = false;
+                showLowBalanceModal.value = true;
+            } else {
+                finalSubmit();
+            }
+        };
 
         // This calculates which items are selected for the modal list
         const selectedItems = computed(() => {
@@ -203,6 +233,10 @@ export default {
                 estimatedTime: prepTimeMinutes 
             };
 
+            // Deduct Balance
+            const updatedBalance = currentBalance.value - total.value;
+            localStorage.setItem('lecomidas_balance', updatedBalance);
+
             // 2. Get existing orders from localStorage or start a new list
             const existingOrders = JSON.parse(localStorage.getItem('lecomidas_orders')) || [];
 
@@ -225,6 +259,7 @@ export default {
         return {
             menuSections, format, formatWhole, total, updateTotal,
             confirmOrder, showModal, showEmptyModal, showSuccessModal, 
+            showLowBalanceModal, currentBalance, handleOrderAttempt, // 5. Return the new ones
             selectedItems, finalSubmit, goToPrepare
         };
     },

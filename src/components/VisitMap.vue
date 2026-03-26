@@ -19,8 +19,8 @@
             <div class="details">
               <p><strong>Phone:</strong> 0977 419 9344</p>
               <p><strong>Email:</strong> lecomidas.ventures@gmail.com</p>
-              <p><strong>Facebook:</strong> facebook.com/Lecomidas</p>
-              <p><strong>Instagram:</strong> instagram.com/lecomidas</p>
+              <p><strong>Facebook:</strong> <a href="https://facebook.com/Lecomidas">facebook.com/Lecomidas</a></p>
+              <p><strong>Instagram:</strong> <a href="https://instagram.com/lecomidas">instagram.com/lecomidas</a></p>
             </div>
           </section>
         </div>
@@ -86,6 +86,10 @@
   margin: 4px 0;
   font-size: 20px;
   color: #333;
+}
+
+.details a {
+  color: #53433f
 }
 
 .map-section {

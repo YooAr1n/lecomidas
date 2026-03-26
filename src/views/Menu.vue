@@ -29,59 +29,60 @@ export default {
 </script>
 
 <style scoped>
-/* Layout: left image - menu - right image */
+/* Layout: Keeps the 3-column structure on all screen sizes */
 .menu-layout {
   display: flex;
-  gap: 0;
-  flex-wrap: nowrap;
-  align-items: stretch;       /* stretch all children vertically */
-  margin: 100px 0 auto;
+  flex-direction: row; /* Always stay in a row */
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
-/* Side images (25% each) */
+/* Side images: 25% width on desktop */
 .side-images {
-  flex: 0 0 25%;
+  flex: 0 0 25%; 
   display: flex;
-  flex-direction: column;
   overflow: hidden;
 }
 
 .side-images img {
-  flex: 1;                    /* fill vertical space */
   width: 100%;
-  object-fit: cover;
+  height: 100%;
+  object-fit: cover; /* Ensures the cake stays centered and fills the bar */
   display: block;
 }
 
-/* Main menu container (50% width) */
+/* Main menu container: 50% width on desktop */
 .menu-container {
   flex: 0 0 50%;
   background-color: #f1ece5;
-  padding: 30px 20px;
+  padding: 30px 15px;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
+  z-index: 2;
 }
 
-/* Optional: scrollable menu if too tall */
-.menu-container > * {
-  overflow-y: auto;
+/* --- Responsive for smaller screens --- */
+@media (max-width: 768px) {
+  /* On mobile, make images thinner so the menu has more room */
+  .side-images {
+    flex: 0 0 15%; 
+  }
+
+  .menu-container {
+    flex: 0 0 70%;
+    padding: 20px 10px;
+  }
 }
 
-/* Responsive for smaller screens */
-@media (max-width: 992px) {
-  .menu-layout {
-    flex-direction: column;
+@media (max-width: 480px) {
+  /* On very small phones, keep images even thinner */
+  .side-images {
+    flex: 0 0 10%;
   }
 
-  .side-images, .menu-container {
-    flex: unset;
-    width: 100%;
-    max-height: none;
-  }
-
-  .side-images img {
-    height: 200px; /* optional height for mobile */
+  .menu-container {
+    flex: 0 0 80%;
+    padding: 15px 5px;
   }
 }
 </style>

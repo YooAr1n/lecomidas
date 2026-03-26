@@ -1,13 +1,8 @@
 <template>
     <div class="package-item">
         <div class="image-wrapper">
-             <img 
-                v-for="(img, index) in imageSources" 
-                :key="index" 
-                :src="img" 
-                alt="Package Image" 
-                :class="{ active: index === currentIndex }"
-            />
+            <img v-for="(img, index) in imageSources" :key="index" :src="img" alt="Package Image"
+                :class="{ active: index === currentIndex }" />
         </div>
 
         <div class="info-details">
@@ -18,7 +13,7 @@
                     {{ feature }}
                 </li>
             </ul>
-            
+
             <button class="order-pkg-btn" @click="showModal = true">
                 Order This Package
             </button>
@@ -36,7 +31,7 @@
                 </div>
                 <div class="modal-actions">
                     <button class="btn-cancel" @click="showModal = false">Cancel</button>
-                    <button class="btn-confirm" @click="finalSubmit">Place Order</button>
+                    <button class="btn-confirm" @click="handleOrderAttempt">Place Order</button>
                 </div>
             </div>
         </BaseModal>
@@ -50,11 +45,25 @@
                 </div>
             </div>
         </BaseModal>
+        <BaseModal v-if="showLowBalanceModal" @close="showLowBalanceModal = false">
+            <div style="text-align: center; padding: 20px;">
+                <div style="font-size: 4rem; margin-bottom: 10px;">💸</div>
+                <h2 style="color: #bc4749;">Insufficient Balance</h2>
+                <p>You don't have enough funds to complete this order.</p>
+                <hr style="border: 0.5px solid #eee; margin: 15px 0;">
+                <p>Your Balance: <strong style="color: #2d6a4f;">₱{{ format(currentBalance, 2) }}</strong></p>
+                <p>Required: <strong style="color: #bc4749;">₱{{ format(price, 2) }}</strong></p>
+
+                <button class="btn-confirm" style="margin-top: 20px; width: 100%;" @click="showLowBalanceModal = false">
+                    Got it
+                </button>
+            </div>
+        </BaseModal>
     </div>
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from 'vue-router';
 import BaseModal from '../components/BaseModal.vue'; // Adjust path if needed
 
@@ -62,7 +71,7 @@ export default {
     name: "Package",
     components: { BaseModal },
     props: {
-        imageSources: Array, 
+        imageSources: Array,
         title: String,
         price: [String, Number],
         features: Array
@@ -70,26 +79,30 @@ export default {
     setup(props) {
         const router = useRouter();
         const currentIndex = ref(0);
-        const showModal = ref(false); // Controls the modal visibility
+        const showModal = ref(false);
         const showSuccessModal = ref(false);
+        const showLowBalanceModal = ref(false); // Make sure this is a ref
         let interval;
 
         const format = window.format;
 
-        onMounted(() => {
-            if (props.imageSources && props.imageSources.length > 1) {
-                interval = setInterval(() => {
-                    currentIndex.value = (currentIndex.value + 1) % props.imageSources.length;
-                }, 3000);
+        // Computed property correctly looks at localStorage
+        const currentBalance = computed(() => {
+            return parseFloat(localStorage.getItem('lecomidas_balance')) || 5000.00;
+        });
+
+        const handleOrderAttempt = () => {
+            const orderTotal = parseFloat(props.price);
+
+            if (currentBalance.value < orderTotal) {
+                showModal.value = false;
+                showLowBalanceModal.value = true; // FIX: Use .value here
+            } else {
+                finalSubmit(orderTotal);
             }
-        });
+        };
 
-        onBeforeUnmount(() => {
-            if (interval) clearInterval(interval);
-        });
-
-        // This function handles the actual saving logic
-        const finalSubmit = () => {
+        const finalSubmit = (orderTotal) => {
             const newOrder = {
                 id: Math.floor(Math.random() * 10000),
                 timestamp: Date.now(),
@@ -97,12 +110,17 @@ export default {
                     month: 'long', day: 'numeric', year: 'numeric',
                     hour: '2-digit', minute: '2-digit', hour12: true
                 }),
-                total: parseFloat(props.price),
+                total: orderTotal,
                 items: [`Package: ${props.title}`],
                 status: 'Preparing',
-                estimatedTime: 15 
+                estimatedTime: 15
             };
 
+            // Deduct Balance
+            const newBalance = currentBalance.value - orderTotal;
+            localStorage.setItem('lecomidas_balance', newBalance);
+
+            // Update Orders
             const existingOrders = JSON.parse(localStorage.getItem('lecomidas_orders')) || [];
             existingOrders.unshift(newOrder);
             localStorage.setItem('lecomidas_orders', JSON.stringify(existingOrders));
@@ -113,10 +131,14 @@ export default {
 
         const goToPrepare = () => {
             showSuccessModal.value = false;
-            router.push('/order');
+            router.push('/order'); 
         };
 
-        return { currentIndex, format, showModal, showSuccessModal, finalSubmit, goToPrepare };
+        return {
+            currentIndex, currentBalance, format, showModal,
+            showSuccessModal, showLowBalanceModal, handleOrderAttempt,
+            finalSubmit, goToPrepare
+        };
     }
 }
 </script>
@@ -132,7 +154,8 @@ export default {
 }
 
 .image-wrapper {
-    position: relative; /* Necessary for absolute positioning of images */
+    position: relative;
+    /* Necessary for absolute positioning of images */
     height: 400px;
     border-radius: 15px;
     overflow: hidden;
@@ -140,14 +163,16 @@ export default {
 }
 
 .image-wrapper img {
-    position: absolute; /* Stack images on top of each other */
+    position: absolute;
+    /* Stack images on top of each other */
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
     opacity: 0;
-    transition: opacity 1s ease-in-out; /* Smooth fade effect */
+    transition: opacity 1s ease-in-out;
+    /* Smooth fade effect */
 }
 
 /* Make the current index visible */
@@ -159,7 +184,8 @@ export default {
     width: 100%;
     margin-top: 20px;
     padding: 12px;
-    background-color: #312618; /* Lecomidas Dark Brown */
+    background-color: #312618;
+    /* Lecomidas Dark Brown */
     color: #f9ebce;
     border: none;
     border-radius: 8px;
@@ -188,7 +214,8 @@ export default {
     padding: 20px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     height: 100%;
-    z-index: 1; /* Keep text above the image stack if needed */
+    z-index: 1;
+    /* Keep text above the image stack if needed */
 }
 
 .info-details h3 {
@@ -220,6 +247,12 @@ export default {
     .package-item {
         max-width: 100%;
     }
+}
+
+.insufficient-text {
+    color: #bc4749;
+    /* A soft red/maroon that fits the cafe aesthetic */
+    font-weight: bold;
 }
 
 .modal-summary {

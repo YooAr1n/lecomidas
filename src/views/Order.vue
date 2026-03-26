@@ -20,8 +20,6 @@ export default {
 
 <style scoped>
 .prepare-container {
-    margin-top: 100px;
-
     /* Background Magic */
     background-image: url("../assets/cafebg.png");
     background-size: cover;

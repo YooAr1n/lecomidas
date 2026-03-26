@@ -74,7 +74,6 @@ export default {
     padding: 40px 20px;
     display: flex;
     justify-content: center;
-    margin-top: 100px;
     color: #333;
     background-image: url("../assets/cafebg.png");
     background-size: cover;

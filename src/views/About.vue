@@ -52,7 +52,6 @@ export default {
   flex-direction: column;
   gap: 20px;
   padding: 20px 0; /* Vertical padding for spacing */
-  margin-top: 100px; 
   
   /* Background Magic */
   background-image: url("../assets/cafebg.png");

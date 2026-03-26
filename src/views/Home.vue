@@ -40,7 +40,6 @@ export default {
   display: flex;
   gap: 20px;
   padding: 20px;
-  margin-top: 100px; /* leave space for fixed navbar */
   align-items: stretch; /* stretch both columns to same height */
 
   /* Background Magic */

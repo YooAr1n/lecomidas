@@ -98,7 +98,6 @@ export default {
 
 /* Existing styles below */
 .orders-container {
-    margin-top: 100px;
     background-image: url("../assets/cafebg.png");
     background-size: cover;
     background-position: center top;
