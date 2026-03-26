@@ -49,7 +49,9 @@
                 </div>
                 <div class="modal-actions">
                     <button class="btn-cancel" @click="showModal = false">Cancel</button>
-                    <button class="btn-confirm" @click="finalSubmit">Place Order</button>
+                    <router-link to="/order">
+                        <button class="btn-confirm" @click="finalSubmit">Place Order</button>
+                    </router-link>
                 </div>
             </div>
         </div>

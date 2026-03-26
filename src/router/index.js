@@ -6,6 +6,7 @@ import About from '../views/About.vue'
 import Menu from '../views/Menu.vue'
 import Visit from '../views/Visit.vue'
 import Book from '../views/Book.vue'
+import Order from '../views/Order.vue'
 
 const routes = [
   {
@@ -32,6 +33,11 @@ const routes = [
     path: '/book',
     name: 'Book',
     component: Book
+  },
+  {
+    path: '/order',
+    name: 'Order',
+    component: Order
   }
 ]
 
