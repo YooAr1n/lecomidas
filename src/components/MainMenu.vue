@@ -1,10 +1,8 @@
 <template>
     <div class="menu-content">
-        <!-- Loop through each section -->
         <section v-for="(section, sIndex) in menuSections" :key="sIndex" class="menu-section">
             <h2>{{ section.name }}</h2>
 
-            <!-- Header row -->
             <div class="menu-header">
                 <span class="header-item">Item</span>
                 <span class="header-qty">Qty</span>
@@ -14,9 +12,14 @@
                 <li v-for="(item, iIndex) in section.items" :key="iIndex">
                     {{ item.name }}
                     <div class="price-quantity">
-                        <span class="price">₱{{ item.price }}</span>
-                        <input type="checkbox" class="item-checkbox" :value="item.price" v-model="item.checked"
-                            @change="updateTotal(item)" />
+                        <span class="price">₱{{ format(item.price, 2) }}</span>
+
+                        <label class="custom-checkbox">
+                            <input type="checkbox" :value="item.price" v-model="item.checked"
+                                @change="updateTotal(item)" />
+                            <span class="checkmark"></span>
+                        </label>
+
                         <input type="number" class="item-quantity" v-model.number="item.quantity"
                             :disabled="!item.checked" min="0" step="1" @change="updateTotal(item)" />
                     </div>
@@ -24,18 +27,48 @@
             </ul>
         </section>
 
-        <!-- Total + Order -->
         <div class="order-section">
-            <h2>₱{{ total.toFixed(2) }}</h2>
+            <h2>₱{{ format(total, 2) }}</h2>
             <button class="order-now-button" @click="confirmOrder">
                 Order Now
             </button>
+        </div>
+
+        <div v-if="showModal" class="modal-overlay" @click.self="showModal = false">
+            <div class="modal-card">
+                <h2>Confirm Your Order</h2>
+                <hr>
+                <ul class="order-summary">
+                    <li v-for="item in selectedItems" :key="item.name">
+                        <span>{{ item.name }} x {{ formatWhole(item.quantity, 2) }}</span>
+                        <span>₱{{ format(item.price * item.quantity, 2) }}</span>
+                    </li>
+                </ul>
+                <div class="modal-total">
+                    <strong>Total Amount: ₱{{ format(total, 2) }}</strong>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-cancel" @click="showModal = false">Cancel</button>
+                    <button class="btn-confirm" @click="finalSubmit">Place Order</button>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="showEmptyModal" class="modal-overlay" @click.self="showEmptyModal = false">
+            <div class="modal-card warning-card">
+                <div class="warning-icon">⚠️</div>
+                <h2>Oops!</h2>
+                <p>Please select at least one item and set its quantity before placing an order.</p>
+                <div class="modal-actions center">
+                    <button class="btn-confirm" @click="showEmptyModal = false">Got it!</button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
-import { reactive, ref } from "vue";
+import { reactive, ref, computed } from "vue"; // Add computed
 
 export default {
     name: "MainMenu",
@@ -92,6 +125,9 @@ export default {
             },
         ]);
 
+        // Add this line here!
+        const format = window.format;
+        const formatWhole = window.formatWhole;
         const total = ref(0);
 
         const updateTotal = () => {
@@ -110,15 +146,41 @@ export default {
             total.value = sum;
         };
 
+        const showModal = ref(false);
+        const showEmptyModal = ref(false);
+
+        // This calculates which items are selected for the modal list
+        const selectedItems = computed(() => {
+            const list = [];
+            menuSections.forEach(section => {
+                section.items.forEach(item => {
+                    if (item.checked && item.quantity > 0) {
+                        list.push(item);
+                    }
+                });
+            });
+            return list;
+        });
+
         const confirmOrder = () => {
-            if (total.value === 0) {
-                alert("Please select items first.");
+            // Now check if there are actually items selected
+            if (selectedItems.value.length === 0) {
+                showEmptyModal.value = true; // Open the warning modal instead of alert
             } else {
-                alert(`Order placed!\n₱${total.value.toFixed(2)}`);
+                showModal.value = true;
             }
         };
 
-        return { menuSections, total, updateTotal, confirmOrder };
+        const finalSubmit = () => {
+            alert("Order sent to Lecomidas! See you soon.");
+            showModal.value = false;
+            // Optional: reset the menu here if you want
+        };
+
+        return {
+            menuSections, format, formatWhole, total, updateTotal,
+            confirmOrder, showModal, showEmptyModal, selectedItems, finalSubmit
+        };
     },
 };
 </script>
@@ -144,22 +206,25 @@ export default {
 }
 
 .menu-header {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0;
-  font-weight: bold;
-  border-bottom: 1px solid #bbb;
-  margin-bottom: 4px;
-  color: #333;
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-weight: bold;
+    border-bottom: 1px solid #bbb;
+    margin-bottom: 4px;
+    color: #333;
 }
 
 .header-item {
-  flex: 1; /* takes same space as item name */
+    flex: 1;
+    /* takes same space as item name */
 }
 
 .header-qty {
-  width: 140px; /* match the width of the price+checkbox+input block */
-  text-align: center; /* optional: center over input */
+    width: 140px;
+    /* match the width of the price+checkbox+input block */
+    text-align: center;
+    /* optional: center over input */
 }
 
 ul {
@@ -211,5 +276,185 @@ li {
 
 .order-now-button:hover {
     background-color: #5b4426;
+}
+
+/* Dark background that covers the whole screen */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    /* Make sure this is higher than your navbar */
+}
+
+/* The actual white box */
+.modal-card {
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.order-summary {
+    margin: 20px 0;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.modal-total {
+    text-align: right;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    border-top: 2px solid #f1ece5;
+    padding-top: 10px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.btn-cancel {
+    background: #eee;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-confirm {
+    background: #312618;
+    color: #f9ebce;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-confirm:hover {
+    background-color: #5b4426;
+}
+
+/* Styling for the warning specific modal */
+.warning-card {
+    text-align: center;
+    border-top: 5px solid #d9534f;
+    /* Subtle red top border for warning */
+}
+
+.warning-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+.modal-card p {
+    margin: 15px 0 25px;
+    font-size: 1.1rem;
+    color: #666;
+}
+
+.center {
+    justify-content: center;
+}
+
+/* --- Custom Checkbox Styling --- */
+.custom-checkbox {
+    position: relative;
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    cursor: pointer;
+}
+
+/* Hide default checkbox */
+.custom-checkbox input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+/* The box the user sees */
+.checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 22px;
+    width: 22px;
+    background-color: #fff;
+    border: 2px solid #312618; /* Lecomidas Dark Brown */
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+/* On hover */
+.custom-checkbox:hover input ~ .checkmark {
+    background-color: #f9ebce;
+}
+
+/* When checked */
+.custom-checkbox input:checked ~ .checkmark {
+    background-color: #312618;
+}
+
+/* The white checkmark inside the box */
+.checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.custom-checkbox input:checked ~ .checkmark:after {
+    display: block;
+}
+
+.custom-checkbox .checkmark:after {
+    left: 7px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* --- Styled Number Input --- */
+.item-quantity {
+    width: 120px;
+    padding: 5px;
+    border: 2px solid #312618;
+    border-radius: 5px;
+    background-color: #fff;
+    color: #312618;
+    font-weight: bold;
+    text-align: center;
+    outline: none;
+    transition: opacity 0.3s ease;
+}
+
+/* Disabled state (when checkbox is unchecked) */
+.item-quantity:disabled {
+    background-color: #d8cfc4;
+    border-color: #bbb;
+    color: #888;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Focus effect */
+.item-quantity:focus {
+    background-color: #f9ebce;
+    box-shadow: 0 0 5px rgba(49, 38, 24, 0.3);
 }
 </style>

@@ -12,7 +12,7 @@
 
         <div class="info-details">
             <h3>{{ title }}</h3>
-            <p class="price">{{ price }}</p>
+            <p class="price">₱{{ format(price, 2) }}</p>
             <ul class="feature-list">
                 <li v-for="(feature, index) in features" :key="index">
                     {{ feature }}
@@ -51,7 +51,9 @@ export default {
             if (interval) clearInterval(interval);
         });
 
-        return { currentIndex };
+        const format = window.format;
+
+        return { currentIndex, format };
     }
 }
 </script>

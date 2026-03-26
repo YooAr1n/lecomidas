@@ -8,19 +8,19 @@
                 <Package 
                     :imageSources="[event1, event4]" 
                     title="50 Pax Package" 
-                    price="₱6,000"
+                    price=6000
                     :features="['FREE 5 Cups', '✓ 5 Coffee Flavors', '✓ 3 Non-Coffee Options', '✓ 2 Baristas + 2 Staff', '✓ Booth Setup • 5 Hours']" 
                 />
                 <Package 
                     :imageSources="[event2, event5]" 
                     title="100 Pax Package" 
-                    price="₱10,000"
+                    price=10000
                     :features="['FREE 10 Cups', '✓ 5 Coffee Flavors', '✓ 3 Non-Coffee Options', '✓ 2 Baristas + 2 Staff', '✓ Booth Setup • 5 Hours']" 
                 />
                 <Package 
                     :imageSources="[event3, event6]" 
                     title="150 Pax Package" 
-                    price="₱14,000"
+                    price=14000
                     :features="['FREE 15 Cups', '✓ 5 Coffee Flavors', '✓ 3 Non-Coffee Options', '✓ 2 Baristas + 2 Staff', '✓ Booth Setup • 5 Hours']" 
                 />
             </div>
